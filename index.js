@@ -1,15 +1,17 @@
-
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const session = require('express-session');
+const passport = require('passport');
+const users = require('./routes/users');
 const tasks = require('./routes/tasks');
-const users = require('./routes/users')
-const jwt = require('jsonwebtoken');
+const config = require('./config/database');
+const session = require('express-session');
 
-mongoose.connect('mongodb://localhost/hadobit')
+
+
+mongoose.connect(config.database);
 let db = mongoose.connection;
 
 // Check connection
@@ -24,43 +26,40 @@ db.on('error', (err) => {
 
 const app = express();
 
-
-// //Bring in Models
-// let Task = require('./models/task');
-
-
 // Body parser middleware
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// CORS
-app.use(cors());
-
-//Express Session middleware
+// app.use(express.static('public'));
 app.use(session({
-  secret: 'thisisthesecretkey',
-  resave: false,
-  saveUninitialized: true,
-  cookie: {secure: true}
+  secret: "asdlkfjhasdlfjkh",
+  cookie: {
+    maxAge: 600000
+  }
 }));
 
+// CORS
+app.use(cors({methods: ['GET', 'POST'], origin: 'http://localhost:3000', credentials: true}));
+
+
+// Passport config
+require('./config/passport')(passport);
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+app.get('*', (req, res, next) => {
+  res.locals.session = req.user || null;
+  console.log(req.session);
+  // console.log(res.locals.user);
+  next();
+});
 
 // Express Router middleware
-app.use(tasks);
-app.use(users);
-// app.use('/', (req, res, next) => {
-//   res.send('middleware');
-// });
 
-// app.get('/api', (req, res) => {
-//   res.json({
-//     message: 'Welcome to the API'
-//   });
-// });
-//
-// app.post('api/login', (req, res)=> {
-//   jwt.sign();
-// });
+app.use(tasks);
+// let users = require('./routes/users')(passport);
+app.use(users);
 
 app.listen(4100, () => {
   console.log('Sever listening on port 4100');

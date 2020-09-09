@@ -15,8 +15,9 @@ router.get('/tasks', (req, res) => {
 });
 
 router.post('/tasks', (req, res) => {
+  console.log(req.session);
   let task = new Task();
-  console.log(req.body);
+  // console.log(req.body);
   task.task = req.body.task;
   task.date_created = new Date();
   task.completed = false;
