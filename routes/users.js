@@ -34,36 +34,29 @@ router.post('/users/create', (req, res) => {
   // res.send('Success');
 });
 
-// router.post('/users/login', passport.authenticate('local', (req, res, next) => {
-//   // console.log(req.session);
-//   req.logIn(user, (err) => {
-//     if (err) {throw err;}
-//   });
-//   return res.json({
-//     loggedIn: true,
-//   })(req, res, next);
-// }))
-
-
-router.post('/users/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err){console.log(err);}
-    if (!user) { console.log('No User');}
-    else {
-      req.logIn(user, (err) => {
-        if (err) {console.log('Error');}
-        else {
-          req.session.cookie.user = user;
-          console.log(req.session);
-          // res.cookie('User', user);
-          // console.log(req.user)
-        }
-      })
-    }
-    return res.json({
-      loggedIn: true
+router.get('/users/login', (req, res) => {
+  // if (req.session.passport)
+  if (req.session.passport) {
+    res.json({
+      hello: "world",
+      user: req.session.passport.user
     })
-  })(req, res, next);
-});
+
+  }
+})
+
+router.post('/users/login', passport.authenticate('local'), (req, res, err) => {
+  if (err) {
+    console.log(err);
+    // throw(err)
+  }
+  // console.log(req.session.passport.user);
+  return res.json({
+    loggedIn: true,
+    user: req.session.passport.user
+  });
+})
+
+
 
 module.exports = router;

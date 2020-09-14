@@ -8,7 +8,7 @@ const users = require('./routes/users');
 const tasks = require('./routes/tasks');
 const config = require('./config/database');
 const session = require('express-session');
-
+const cookieParser = require('cookie-parser');
 
 
 mongoose.connect(config.database);
@@ -30,17 +30,23 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// app.use(express.static('public'));
-app.use(session({
-  secret: "asdlkfjhasdlfjkh",
-  cookie: {
-    maxAge: 600000
-  }
-}));
+app.use(cookieParser());
+app.use(session({cookieName: "session", secret: "keyboardcat", duration: 10000, activeDuration: 100000}));
+
+// app.set('trust proxy', 1);
+// app.use(session({
+//   secret: "asdlkfjhasdlfjkh",
+//   cookie: {
+//     maxAge: 600000
+//   }
+// }));
+
+app.use(express.static('public'));
 
 // CORS
-app.use(cors({methods: ['GET', 'POST'], origin: 'http://localhost:3000', credentials: true}));
-
+app.use(cors({origin: 'http://localhost:3000', credentials: true}));
+// app.use(cors({methods: ['GET', 'POST'], credentials: true}));
+// , origin: 'http://localhost:3000'
 
 // Passport config
 require('./config/passport')(passport);
@@ -49,16 +55,14 @@ app.use(passport.session());
 
 
 app.get('*', (req, res, next) => {
-  res.locals.session = req.user || null;
-  console.log(req.session);
-  // console.log(res.locals.user);
+  // console.log(req.session);
+  if (req.session.passport) {
+    res.locals.user = req.session.passport.user;
+  }
   next();
 });
 
-// Express Router middleware
-
 app.use(tasks);
-// let users = require('./routes/users')(passport);
 app.use(users);
 
 app.listen(4100, () => {
