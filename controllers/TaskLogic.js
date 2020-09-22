@@ -59,7 +59,7 @@ const returnQueryForOneDay = (day, user_id) => {
 exports.getWeeksTasks = async (req, res) => {
   let today = new Date();
   let weekDays = getDaysThisWeek(today);
-  let tasksForWeek = {}
+  let tasksForWeek = []
   let mondayQuery = returnQueryForOneDay(weekDays.monday, "5f57cb66bacfd9399edb4ee1")
   let tuesdayQuery = returnQueryForOneDay(weekDays.tuesday, "5f57cb66bacfd9399edb4ee1")
   let wednesdayQuery = returnQueryForOneDay(weekDays.wednesday, "5f57cb66bacfd9399edb4ee1")
@@ -67,26 +67,33 @@ exports.getWeeksTasks = async (req, res) => {
   let fridayQuery = returnQueryForOneDay(weekDays.friday, "5f57cb66bacfd9399edb4ee1")
   let saturdayQuery = returnQueryForOneDay(weekDays.saturday, "5f57cb66bacfd9399edb4ee1")
   let sundayQuery = returnQueryForOneDay(weekDays.sunday, "5f57cb66bacfd9399edb4ee1")
+  await Task.find(sundayQuery, (err, tasks) => {
+    tasksForWeek.push({day: "SUNDAY", id: 0, tasks: tasks})
+    // sunday = {tasks: tasks}
+  })
   await Task.find(mondayQuery, (err, tasks) => {
-    tasksForWeek.monday = tasks
+    tasksForWeek.push({day: "MONDAY", id: 1, tasks: tasks})
+    // monday = {tasks: tasks}
   })
   await Task.find(tuesdayQuery, (err, tasks) => {
-    tasksForWeek.tuesday = tasks
+    tasksForWeek.push({day: "TUESDAY", id: 2, tasks: tasks})
+    // tuesday = {tasks: tasks}
   })
   await Task.find(wednesdayQuery, (err, tasks) => {
-    tasksForWeek.wednesday = tasks
+    tasksForWeek.push({day: "WEDNESDAY", id: 3, tasks: tasks})
+    // wednesday = {tasks: tasks}
   })
   await Task.find(thursdayQuery, (err, tasks) => {
-    tasksForWeek.thursday = tasks
+    tasksForWeek.push({day: "THURSDAY", id: 4,tasks: tasks})
+    // thursday = {tasks: tasks}
   })
   await Task.find(fridayQuery, (err, tasks) => {
-    tasksForWeek.friday = tasks
+    tasksForWeek.push({day: "FRIDAY", id: 5, tasks: tasks})
+    // friday = {tasks: tasks}
   })
   await Task.find(saturdayQuery, (err, tasks) => {
-    tasksForWeek.saturday = tasks
-  })
-  await Task.find(sundayQuery, (err, tasks) => {
-    tasksForWeek.sunday = tasks
+    tasksForWeek.push({day:"SATURDAY", id: 6, tasks: tasks})
+    // saturday = {tasks: tasks}
   })
 
   res.json(tasksForWeek);
