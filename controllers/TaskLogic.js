@@ -57,19 +57,19 @@ const returnQueryForOneDay = (day, user_id) => {
 }
 
 exports.getWeeksTasks = async (req, res) => {
+  console.log(req.headers);
   let today = new Date();
   let weekDays = getDaysThisWeek(today);
   let tasksForWeek = []
-  let mondayQuery = returnQueryForOneDay(weekDays.monday, "5f57cb66bacfd9399edb4ee1")
-  let tuesdayQuery = returnQueryForOneDay(weekDays.tuesday, "5f57cb66bacfd9399edb4ee1")
-  let wednesdayQuery = returnQueryForOneDay(weekDays.wednesday, "5f57cb66bacfd9399edb4ee1")
-  let thursdayQuery = returnQueryForOneDay(weekDays.thursday, "5f57cb66bacfd9399edb4ee1")
-  let fridayQuery = returnQueryForOneDay(weekDays.friday, "5f57cb66bacfd9399edb4ee1")
-  let saturdayQuery = returnQueryForOneDay(weekDays.saturday, "5f57cb66bacfd9399edb4ee1")
-  let sundayQuery = returnQueryForOneDay(weekDays.sunday, "5f57cb66bacfd9399edb4ee1")
+  let mondayQuery = returnQueryForOneDay(weekDays.monday, req.session.passport.user)
+  let tuesdayQuery = returnQueryForOneDay(weekDays.tuesday, req.session.passport.user)
+  let wednesdayQuery = returnQueryForOneDay(weekDays.wednesday, req.session.passport.user)
+  let thursdayQuery = returnQueryForOneDay(weekDays.thursday, req.session.passport.user)
+  let fridayQuery = returnQueryForOneDay(weekDays.friday, req.session.passport.user)
+  let saturdayQuery = returnQueryForOneDay(weekDays.saturday, req.session.passport.user)
+  let sundayQuery = returnQueryForOneDay(weekDays.sunday, req.session.passport.user)
   await Task.find(sundayQuery, (err, tasks) => {
     tasksForWeek.push({day: "SUNDAY", id: 0, tasks: tasks})
-    // sunday = {tasks: tasks}
   })
   await Task.find(mondayQuery, (err, tasks) => {
     tasksForWeek.push({day: "MONDAY", id: 1, tasks: tasks})
@@ -93,10 +93,8 @@ exports.getWeeksTasks = async (req, res) => {
   })
   await Task.find(saturdayQuery, (err, tasks) => {
     tasksForWeek.push({day:"SATURDAY", id: 6, tasks: tasks})
-    // saturday = {tasks: tasks}
+    res.json(tasksForWeek);
   })
-
-  res.json(tasksForWeek);
 }
 
 // Get incomplete tasks for a certain day
@@ -111,17 +109,6 @@ exports.getIncompleteTasksForToday = (req, res) =>{
 }
 
 exports.getTasksForWeek = (req, res) => {
-  let today = new Date();
-  let weekDays = getDaysThisWeek(today);
-  let startSunday = weekDays.sunday.setHours(0,0,0,0);
-  let endSaturday = weekDays.saturday.setHours(23, 59, 59, 999);
-
-  Task.find({
-    date_created: {$gte: startSunday, $lte: endSaturday},
-    user_id: req.session.passport.user
-  }, (err, tasks) => {
-    res.json(tasks);
-  });
 }
 
 exports.setTaskComplete = (req, res) => {
@@ -137,14 +124,15 @@ exports.setTaskComplete = (req, res) => {
 
 exports.createTaskToday =  (req, res) => {
   if (req.session.passport) {
+    let today = new Date()
     let task = new Task();
     task.task = req.body.task;
-    task.date_created = new Date();
+    task.date_created = today;
     task.completed = false;
     task.user_id = req.session.passport.user;
 
     console.log("Creating task " + task.task + " for user " + req.session.passport.user);
-
+    console.log(task);
     task.save((err) => {
       if(err) {
         console.log(err);

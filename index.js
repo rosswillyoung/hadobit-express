@@ -9,7 +9,8 @@ const tasks = require('./routes/tasks');
 const config = require('./config/database');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
-
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 mongoose.connect(config.database);
 let db = mongoose.connection;
@@ -33,13 +34,6 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(session({cookieName: "session", secret: "keyboardcat", duration: 10000, activeDuration: 100000}));
 
-// app.set('trust proxy', 1);
-// app.use(session({
-//   secret: "asdlkfjhasdlfjkh",
-//   cookie: {
-//     maxAge: 600000
-//   }
-// }));
 
 app.use(express.static('public'));
 
@@ -53,14 +47,6 @@ require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-app.get('*', (req, res, next) => {
-  // console.log(req.session);
-  if (req.session.passport) {
-    res.locals.user = req.session.passport.user;
-  }
-  next();
-});
 
 app.use(tasks);
 app.use(users);

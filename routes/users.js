@@ -1,9 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
-
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 let User = require('../models/user');
 
 
@@ -51,10 +51,18 @@ router.post('/users/login', passport.authenticate('local'), (req, res, err) => {
     // throw(err)
   }
   // console.log(req.session.passport.user);
-  return res.json({
-    loggedIn: true,
+  const accessToken = jwt.sign({ username: req.body.username }, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+  res.json({
+    accessToken,
     user: req.session.passport.user
-  });
+  })
+
+  // res.locals.user = req.session.passport.user
+  // console.log("RES.LOCALS.USER: " + res.locals.user);
+  // return res.json({
+  //   loggedIn: true,
+  //   user: req.session.passport.user
+  // });
 })
 
 
